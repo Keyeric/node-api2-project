@@ -6,22 +6,32 @@ const posts = require("../db");
 //Start POST Requests
 
 //When the client makes a request to `/api/posts`:
+//Create a post
 router.post("/", (req, res) => {
+  //request.body variable
   const body = req.body;
 
+  //Helper function start
   posts
     .insert(body)
     .then((post) => {
+      //if request.body has a title and contents key and the values are NOT empty strings
       if (body.title && body.contents) {
+        //create the post with status of 201 Created
         res.status(201).json(post);
       } else {
+        //if it is missing one of the two values (keys are required)
         res.status(400).json({
+          //post nothing and send an error
           errorMessage: "Please provide title and contents for the post",
         });
       }
     })
+    //if something goes wrong on the server side
     .catch((err) => {
+      //tell us the error
       console.log(err);
+      //send an error
       res.status(500).json({
         error: "There was an error while saving the post to the database",
       });
@@ -29,45 +39,44 @@ router.post("/", (req, res) => {
 });
 
 //When the client makes a request to `/api/posts/:id/comments`:
+//Create a comment
 router.post("/:id/comments", (req, res) => {
   const id = req.params.id;
   const body = req.body;
+  //the comment needs a post id (what post are we adding a comment to?)
   body.post_id = id;
-
-  posts
-    .findById(id)
-    .then((idPost) => {
-      console.log(idPost);
-      if (idPost.length === 0) {
-        res
-          .status(404)
-          .json({ message: "The post with the specified ID does not exist." });
-      }
-      posts
-        .insertComment(body)
-        .then(() => {
-          if (body.text) {
+  if (body.text) {
+    // Helper function start
+    posts
+      .findById(id)
+      .then((idPost) => {
+        // idPost is the id of the found post
+        console.log(idPost);
+        //start of the Helper function to create a comment
+        posts
+          .insertComment(body)
+          .then(() => {
             res.status(201).json(body);
-          } else {
-            res
-              .status(400)
-              .json({ errorMessage: "Please provide text for the comment." });
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          res.status(500).json({
-            error:
-              "There was an error while saving the comment to the database",
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(500).json({
+              error:
+                "There was an error while saving the comment to the database",
+            });
           });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(404).json({
+          message: "The post with the specified ID does not exist.",
         });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        error: "There was an error while retrieving the post from the database",
       });
-    });
+  } else {
+    res
+      .status(400)
+      .json({ errorMessage: "Please provide text for the comment." });
+  }
 });
 // End POST Requests
 
