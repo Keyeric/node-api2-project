@@ -85,11 +85,12 @@ router.post("/:id/comments", (req, res) => {
 //When the client makes a request to `/api/posts`:
 router.get("/", (req, res) => {
   const query = req.query;
+  const message = process.env.MESSAGE || "Hello from the other side";
 
   posts
     .find(query)
     .then((postsFromDataBase) => {
-      res.status(200).json(postsFromDataBase);
+      res.status(200).json(message);
     })
     .catch((err) => {
       console.log(err);
