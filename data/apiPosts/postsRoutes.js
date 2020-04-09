@@ -90,7 +90,7 @@ router.get("/", (req, res) => {
   posts
     .find(query)
     .then((postsFromDataBase) => {
-      res.status(200).json(message);
+      res.status(200).json(message, postsFromDataBase);
     })
     .catch((err) => {
       console.log(err);
